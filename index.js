@@ -26,7 +26,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         const userCollection = client.db('glymrDB').collection('users')
-        const productsCollection = client.db('glymrDB').collection('products')
+        const productCollection = client.db('glymrDB').collection('products')
         
         // jwt token api making related
         app.post('/jwt', async (req, res) => {
@@ -66,14 +66,73 @@ async function run() {
         })
 
 
-        app.get('/products',async(req,res)=>{
+
+
+        app.get("/products", async (req, res) => {
             try {
-                const products = await productsCollection.find().toArray();
-                res.send(products)
+              const {
+                page = 1,
+                limit = 10,
+                search = "",
+                brand,
+                category,
+                minPrice,
+                maxPrice,
+                sortBy,
+                sortOrder = "asc",
+              } = req.query;
+      
+              // Build the query object for filtering
+              let query = {};
+      
+              if (search) {
+                query.productName = { $regex: search, $options: "i" }; // Case-insensitive search
+              }
+              if (brand) {
+                query.brandName = brand;
+              }
+              if (category) {
+                query.category = category;
+              }
+              if (minPrice && maxPrice) {
+                query.price = {
+                  $gte: parseFloat(minPrice),
+                  $lte: parseFloat(maxPrice),
+                };
+              }
+      
+              // Sorting options
+              let sortOptions = {};
+              if (sortBy) {
+                sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1; // Ascending or descending
+              } else {
+                sortOptions["creationDate"] = -1; // Default sort by newest first
+              }
+      
+              // Pagination options
+              const skip = (page - 1) * limit;
+      
+              const products = await productCollection
+                .find(query)
+                .sort(sortOptions)
+                .skip(skip)
+                .limit(parseInt(limit))
+                .toArray();
+      
+              const totalProducts = await productCollection.countDocuments(query);
+      
+              res.send({
+                products,
+                totalProducts,
+                totalPages: Math.ceil(totalProducts / limit),
+                currentPage: parseInt(page),
+              });
             } catch (error) {
-                res.status(500).send({ message: 'Error fetching products', error });
+              res.status(500).send({ message: "Error fetching products", error });
             }
-        })
+          });
+      
+
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");

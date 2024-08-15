@@ -28,29 +28,7 @@ async function run() {
         const userCollection = client.db('glymrDB').collection('users')
         const productCollection = client.db('glymrDB').collection('products')
         
-        // jwt token api making related
-        app.post('/jwt', async (req, res) => {
-            const user = req.body;
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
-            // console.log("the token is ",token);
-            res.send({ token })
-        })
-        // middleware
-        const verifyToken = (req, res, next) => {
-            console.log("inserted token", req.headers.authorization);
-            if (!req.headers.authorization) {
-                return res.status(401).send({ message: 'Unauthorized access' })
-            }
-            const token = req.headers.authorization.split(' ')[1]
-            jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
-                if (err) {
-                    return res.status(401).send({ message: 'Unauthorized access' })
-                }
-                req.decoded = decoded;
-                next()
-            })
-        }
-    
+
 
         app.post('/users', async (req, res) => {
             const users = req.body;

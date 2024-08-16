@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config()
 const port = process.env.PORT || 5000
 
+
 // middleware
 app.use(express.json())
 app.use(cors())
@@ -45,6 +46,7 @@ async function run() {
 
 
 
+// get 
 
         app.get("/products", async (req, res) => {
             try {

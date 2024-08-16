@@ -8,7 +8,7 @@ const port = process.env.PORT || 5000
 // middleware
 app.use(express.json())
 app.use(cors())
-// app.use(express.static("public"));
+
 
 // mongodb data  [change this data]
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
